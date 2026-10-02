@@ -76,6 +76,7 @@ async function renderCandidate(u){
 (async()=>{
   try{
     const {user:u}=await api('/api/me');
+    if(u.role==='recruiter'||u.role==='admin'){location.href='recruiter.html';return}
     if(u.role!=='candidate'){
       app.innerHTML=`<div class="card"><h1>Welcome, ${esc(u.full_name)}</h1><p class="meta">You're signed in as ${esc(u.role)}. Your ${u.role==='employer'?'employer':'recruiter'} dashboard is the next piece we're building.</p></div>`;
       return;
