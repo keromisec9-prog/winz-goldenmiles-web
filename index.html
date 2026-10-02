@@ -43,7 +43,7 @@ footer{background:#060a14;color:#9aa4b2;padding:26px 0;font-size:14px}
 
 <header><div class="wrap">
   <a class="logo" href="#">WinZ <b>GoldenMiles</b></a>
-  <nav><a href="#jobs">Jobs</a><a href="#services">Services</a><a href="#hire">Hire Talent</a></nav>
+  <nav><a href="#jobs">Jobs</a><a href="#services">Services</a><a href="#hire">Hire Talent</a><a href="login.html">Login</a></nav>
 </div></header>
 
 <div class="hero"><div class="wrap">
@@ -106,10 +106,10 @@ async function loadJobs(q='',loc=''){
   try{
     const r=await fetch(`${API}/api/jobs?q=${encodeURIComponent(q)}&location=${encodeURIComponent(loc)}`);
     const {jobs}=await r.json();
-    box.innerHTML=jobs.length?jobs.map(j=>`<div class="card"><h3>${esc(j.title)}</h3>
+    box.innerHTML=jobs.length?jobs.map(j=>`<a class="card" style="display:block" href="job.html?slug=${encodeURIComponent(j.slug)}"><h3>${esc(j.title)}</h3>
       <div class="meta">${esc(j.company||'Confidential employer')} &middot; ${esc(j.location||'Uganda')}</div>
       <span class="tag">${esc(j.employment_type)}</span>${j.industry?`<span class="tag">${esc(j.industry)}</span>`:''}
-      <p class="meta" style="margin-top:10px">${sal(j)}</p></div>`).join('')
+      <p class="meta" style="margin-top:10px">${sal(j)}</p></a>`).join('')
     :'<p>No open jobs match yet. <a href="#hire"><u>Let our recruiters find you a role.</u></a></p>';
   }catch(e){box.innerHTML='<p>Could not load jobs. Please try again.</p>'}
 }
