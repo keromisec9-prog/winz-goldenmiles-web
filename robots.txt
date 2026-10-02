@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://keromisec9-prog.github.io/winz-goldenmiles-web/sitemap.xml
