@@ -1,0 +1,34 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Job | WinZ GoldenMiles</title><link rel="stylesheet" href="style.css"></head><body>
+<header></header>
+<main><div class="wrap" id="job"><p>Loading...</p></div></main>
+<script src="app.js"></script>
+<script>
+hdr();
+const slug=new URLSearchParams(location.search).get('slug')||'';
+(async()=>{
+  const box=$('#job');
+  try{
+    const {job:j}=await api('/api/jobs/'+encodeURIComponent(slug),{noRedirect:true});
+    document.title=j.title+' | WinZ GoldenMiles';
+    const u=user();
+    let apply;
+    if(!u)apply=`<a class="btn" href="login.html?next=${encodeURIComponent('job.html?slug='+slug)}">Sign in to apply</a>`;
+    else if(u.role!=='candidate')apply='<p class="meta">Only candidate accounts can apply for jobs.</p>';
+    else apply=`<label>Cover note (optional)</label><textarea id="cn" rows="4"></textarea><p style="margin-top:12px"><button class="btn" id="ap">Apply now</button></p><div class="msg" id="m"></div>`;
+    box.innerHTML=`<div class="card"><h1>${esc(j.title)}</h1>
+      <p class="meta">${esc(j.company||'Confidential employer')} &middot; ${esc(j.location||'Uganda')}</p>
+      <p style="margin:10px 0"><span class="tag">${esc(j.employment_type)}</span>${j.industry?`<span class="tag">${esc(j.industry)}</span>`:''}${j.experience_level?`<span class="tag">${esc(j.experience_level)}</span>`:''}</p>
+      <p>${sal(j)}</p></div>
+      <div class="card"><h2>About the role</h2><p class="pre">${esc(j.description)}</p></div>
+      <div class="card">${apply}</div>`;
+    const b=$('#ap');
+    if(b)b.onclick=async()=>{
+      try{await api('/api/jobs/'+j.id+'/apply',{method:'POST',body:{cover_note:$('#cn').value}});msg($('#m'),'Application sent! Track it in your dashboard.',true);b.disabled=true}
+      catch(e){msg($('#m'),e.message,false)}
+    };
+  }catch(e){
+    box.innerHTML='<div class="card"><h2>Job not found</h2><p class="meta">This job may have been closed. <a href="index.html#jobs"><u>See open jobs</u></a></p></div>';
+  }
+})();
+</script></body></html>
