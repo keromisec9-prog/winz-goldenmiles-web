@@ -1,0 +1,42 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign in | WinZ GoldenMiles</title><link rel="stylesheet" href="style.css"></head><body>
+<header></header>
+<main><div class="wrap" style="max-width:460px">
+  <div class="tabs"><button class="btn" id="t-login">Sign in</button><button class="btn out" id="t-reg">Create account</button></div>
+  <div class="card" id="login-card"><form id="login">
+    <label>Email</label><input name="email" type="email" required>
+    <label>Password</label><input name="password" type="password" required>
+    <p style="margin-top:14px"><button class="btn" style="width:100%">Sign in</button></p>
+  </form></div>
+  <div class="card" id="reg-card" style="display:none"><form id="reg">
+    <label>I am a</label><select name="role" id="role"><option value="candidate">Job seeker</option><option value="employer">Employer</option></select>
+    <label>Full name</label><input name="full_name" required>
+    <div id="co" style="display:none"><label>Company name</label><input name="company_name"></div>
+    <label>Email</label><input name="email" type="email" required>
+    <label>Phone</label><input name="phone">
+    <label>Password (min 8 characters)</label><input name="password" type="password" minlength="8" required>
+    <p style="margin-top:14px"><button class="btn" style="width:100%">Create account</button></p>
+  </form></div>
+  <div class="msg" id="m"></div>
+</div></main>
+<script src="app.js"></script>
+<script>
+hdr();
+const next=safeNext(new URLSearchParams(location.search).get('next'));
+if(tok())location.href=next;
+const show=reg=>{
+  $('#login-card').style.display=reg?'none':'';$('#reg-card').style.display=reg?'':'none';
+  $('#t-login').className='btn'+(reg?' out':'');$('#t-reg').className='btn'+(reg?'':' out');
+};
+$('#t-login').onclick=()=>show(false);
+$('#t-reg').onclick=()=>show(true);
+$('#role').onchange=e=>{$('#co').style.display=e.target.value==='employer'?'':'none'};
+async function submit(e,path){
+  e.preventDefault();
+  const body=Object.fromEntries(new FormData(e.target));
+  try{const d=await api(path,{method:'POST',body});setAuth(d.token,d.user);location.href=next}
+  catch(err){msg($('#m'),err.message,false)}
+}
+$('#login').onsubmit=e=>submit(e,'/api/auth/login');
+$('#reg').onsubmit=e=>submit(e,'/api/auth/register');
+</script></body></html>
