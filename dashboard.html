@@ -3,6 +3,7 @@
 <header></header>
 <main><div class="wrap" id="app"><p>Loading...</p></div></main>
 <script src="app.js"></script>
+<script src="cv.js"></script>
 <script>
 hdr();
 if(!tok())location.href='login.html?next=dashboard.html';
@@ -54,8 +55,7 @@ async function renderCandidate(u){
     <p style="margin-top:12px"><button class="btn">Save profile</button></p><div class="msg" id="pm"></div>
   </form></div>
   <div class="card"><h2>My CV</h2><p class="meta" id="cvs">${cvId?'CV uploaded.':'No CV uploaded yet.'}</p>
-    <input type="file" id="cv" accept=".pdf,.doc,.docx" style="margin-top:10px">
-    <p style="margin-top:10px"><button class="btn sm" id="cvu">Upload CV</button> <button class="btn sm out" id="cvd" style="${cvId?'':'display:none'}">Download</button></p>
+    <p style="margin-top:10px"><button class="btn sm" id="cvpick">${cvId?'Replace CV':'Add CV'}</button> <button class="btn sm out" id="cvd" style="${cvId?'':'display:none'}">Download</button></p>
     <div class="msg" id="cm"></div></div>
   <div id="secs"></div>
   <div class="card"><h2>My applications</h2>${A.applications.length?A.applications.map(a=>`<div class="row"><div><a href="job.html?slug=${encodeURIComponent(a.slug)}"><b>${esc(a.title)}</b></a><div class="meta">${esc(a.company||'')} &middot; ${esc(a.location||'')}</div></div><span class="tag">${esc(a.status)}</span></div>`).join(''):'<p class="meta">No applications yet. <a href="index.html#jobs"><u>Browse jobs</u></a></p>'}</div>`;
@@ -69,20 +69,7 @@ async function renderCandidate(u){
     try{await api('/api/profile',{method:'PUT',body});msg($('#pm'),'Profile saved.',true)}
     catch(err){msg($('#pm'),err.message,false)}
   };
-  $('#cvu').onclick=async()=>{
-    const f=$('#cv').files[0];
-    if(!f)return msg($('#cm'),'Choose a file first.',false);
-    const type=CT[f.name.split('.').pop().toLowerCase()]||f.type;
-    try{
-      const d=await api('/api/profile/cv',{method:'PUT',body:f,raw:true,headers:{'Content-Type':type}});
-      cvId=d.file_id;$('#cvd').style.display='';$('#cvs').textContent='CV uploaded.';msg($('#cm'),'CV uploaded.',true);
-    }catch(err){msg($('#cm'),err.message,false)}
-  };
-  $('#cvd').onclick=async()=>{
-    const r=await fetch(API+'/api/files/'+cvId,{headers:{Authorization:'Bearer '+tok()}});
-    if(!r.ok)return msg($('#cm'),'Could not download your CV.',false);
-    const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download='my-cv';a.click();
-  };
+  initCv(cvId);
   renderSecs(P);
 }
 
