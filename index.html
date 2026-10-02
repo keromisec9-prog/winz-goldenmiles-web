@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WinZ GoldenMiles | Recruitment & Talent Solutions in Uganda</title>
+<meta name="description" content="Hire top talent or find your next career in Uganda. WinZ GoldenMiles handles recruitment, staffing, executive search and HR consulting.">
+<style>
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111827;background:#f6f7f9;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1080px;margin:0 auto;padding:0 18px}
+header{background:#0a0f1c;color:#fff;position:sticky;top:0;z-index:9}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{font-weight:800;font-size:18px}.logo b{color:#d9a521}
+nav a{margin-left:16px;font-size:14px;color:#cbd5e1}
+.btn{display:inline-block;background:#d9a521;color:#0a0f1c;font-weight:700;border:0;border-radius:8px;padding:12px 20px;font-size:15px;cursor:pointer}
+.btn.ghost{background:transparent;color:#fff;border:1px solid #d9a521}
+.hero{background:linear-gradient(135deg,#0a0f1c 40%,#1b2540);color:#fff;padding:56px 0 90px}
+.hero h1{font-size:clamp(32px,7vw,54px);line-height:1.1;margin-bottom:14px}
+.hero h1 span{color:#d9a521}
+.hero p{max-width:520px;color:#cbd5e1;margin-bottom:22px}
+.hero .btn{margin-right:10px;margin-bottom:8px}
+.search{background:#fff;border-radius:14px;padding:16px;margin-top:-50px;box-shadow:0 10px 30px rgba(0,0,0,.15);display:grid;gap:10px;grid-template-columns:1fr;position:relative}
+@media(min-width:700px){.search{grid-template-columns:2fr 1.5fr auto}}
+input,select,textarea{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px;font:inherit;background:#fff;color:#111827}
+section{padding:44px 0}
+h2{font-size:26px;margin-bottom:6px}
+.sub{color:#6b7280;margin-bottom:22px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.card h3{font-size:17px}
+.meta{color:#6b7280;font-size:14px;margin:4px 0 10px}
+.tag{display:inline-block;background:#fdf3d7;color:#8a6400;border-radius:20px;padding:2px 10px;font-size:12px;margin-right:6px}
+.dark{background:#0a0f1c;color:#fff}
+.dark .sub{color:#9aa4b2}
+form.lead{display:grid;gap:10px;max-width:640px}
+.two{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:700px){.two{grid-template-columns:1fr 1fr}}
+.msg{padding:12px;border-radius:8px;margin-top:10px;display:none}
+.ok{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}
+.hp{position:absolute;left:-9999px}
+footer{background:#060a14;color:#9aa4b2;padding:26px 0;font-size:14px}
+</style></head><body>
+
+<header><div class="wrap">
+  <a class="logo" href="#">WinZ <b>GoldenMiles</b></a>
+  <nav><a href="#jobs">Jobs</a><a href="#services">Services</a><a href="#hire">Hire Talent</a></nav>
+</div></header>
+
+<div class="hero"><div class="wrap">
+  <h1>Top Talent.<br>Great Opportunities.<br><span>Real Careers.</span></h1>
+  <p>WinZ GoldenMiles connects talented professionals with leading employers and helps businesses build winning teams.</p>
+  <a class="btn" href="#jobs">Find a Job</a><a class="btn ghost" href="#hire">Hire Talent</a>
+</div></div>
+
+<div class="wrap"><form class="search" id="search">
+  <input id="q" placeholder="Job title or keywords e.g. Nurse, Accountant">
+  <input id="loc" placeholder="Location e.g. Kampala">
+  <button class="btn" type="submit">Search Jobs</button>
+</form></div>
+
+<section id="jobs"><div class="wrap">
+  <h2>Latest Opportunities</h2><p class="sub">Verified jobs from trusted employers.</p>
+  <div class="grid" id="jobs-list"></div>
+</div></section>
+
+<section id="services" style="background:#fff"><div class="wrap">
+  <h2>Our Recruitment Services</h2><p class="sub">More than job placements. We build teams that drive success.</p>
+  <div class="grid">
+    <div class="card"><h3>Permanent Recruitment</h3><p class="meta">Long-term talent for lasting impact.</p></div>
+    <div class="card"><h3>Temporary Staffing</h3><p class="meta">Flexible workforce when you need it.</p></div>
+    <div class="card"><h3>Executive Search</h3><p class="meta">Finding leaders for tomorrow.</p></div>
+    <div class="card"><h3>Graduate Recruitment</h3><p class="meta">Kickstart your future workforce.</p></div>
+    <div class="card"><h3>Outsourcing</h3><p class="meta">Focus on your core business.</p></div>
+    <div class="card"><h3>HR Consulting</h3><p class="meta">Smarter HR, stronger teams.</p></div>
+    <div class="card"><h3>Background Verification</h3><p class="meta">Hire with confidence.</p></div>
+    <div class="card"><h3>Training &amp; Development</h3><p class="meta">Upskill your workforce.</p></div>
+  </div>
+</div></section>
+
+<section id="hire" class="dark"><div class="wrap">
+  <h2>Need exceptional talent? We'll find it for you.</h2>
+  <p class="sub">Tell us who you're hiring and our recruiters will get back to you.</p>
+  <form class="lead" id="lead">
+    <div class="two"><input name="company_name" placeholder="Company name" required><input name="contact_name" placeholder="Your name" required></div>
+    <div class="two"><input name="email" type="email" placeholder="Email"><input name="phone" placeholder="Phone / WhatsApp"></div>
+    <div class="two"><input name="job_title" placeholder="Job title e.g. Registered Nurse" required><input name="industry" placeholder="Industry"></div>
+    <div class="two"><input name="positions" type="number" min="1" placeholder="Number of positions"><input name="location" placeholder="Location"></div>
+    <textarea name="notes" rows="3" placeholder="Anything else we should know?"></textarea>
+    <input class="hp" name="website" tabindex="-1" autocomplete="off">
+    <button class="btn" type="submit">Request Recruitment Support</button>
+  </form>
+  <div class="msg" id="lead-msg"></div>
+</div></section>
+
+<footer><div class="wrap">&copy; WinZ GoldenMiles. Your Success. Our Mission.</div></footer>
+
+<script>
+const API='https://goldenmiles-api.kerosoftz522.workers.dev';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>Number(n).toLocaleString('en-US');
+const sal=j=>j.salary_min?`${esc(j.currency)} ${fmt(j.salary_min)}${j.salary_max?' - '+fmt(j.salary_max):'+'}`:'Salary negotiable';
+
+async function loadJobs(q='',loc=''){
+  const box=$('#jobs-list'); box.innerHTML='<p>Loading...</p>';
+  try{
+    const r=await fetch(`${API}/api/jobs?q=${encodeURIComponent(q)}&location=${encodeURIComponent(loc)}`);
+    const {jobs}=await r.json();
+    box.innerHTML=jobs.length?jobs.map(j=>`<div class="card"><h3>${esc(j.title)}</h3>
+      <div class="meta">${esc(j.company||'Confidential employer')} &middot; ${esc(j.location||'Uganda')}</div>
+      <span class="tag">${esc(j.employment_type)}</span>${j.industry?`<span class="tag">${esc(j.industry)}</span>`:''}
+      <p class="meta" style="margin-top:10px">${sal(j)}</p></div>`).join('')
+    :'<p>No open jobs match yet. <a href="#hire"><u>Let our recruiters find you a role.</u></a></p>';
+  }catch(e){box.innerHTML='<p>Could not load jobs. Please try again.</p>'}
+}
+$('#search').addEventListener('submit',e=>{e.preventDefault();loadJobs($('#q').value,$('#loc').value);$('#jobs').scrollIntoView({behavior:'smooth'})});
+
+$('#lead').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const f=Object.fromEntries(new FormData(e.target));
+  if(f.website) return;
+  delete f.website;
+  f.positions=parseInt(f.positions,10)||1;
+  const m=$('#lead-msg');
+  try{
+    const r=await fetch(API+'/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(f)});
+    const d=await r.json();
+    if(r.ok){e.target.reset();m.className='msg ok';m.textContent='Thank you! Our recruitment team will contact you shortly.'}
+    else{m.className='msg bad';m.textContent=d.error||'Something went wrong. Please try again.'}
+  }catch(err){m.className='msg bad';m.textContent='Network error. Please try again.'}
+  m.style.display='block';
+});
+loadJobs();
+</script>
+</body></html>
