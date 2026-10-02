@@ -1,0 +1,99 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard | WinZ GoldenMiles</title><link rel="stylesheet" href="style.css"></head><body>
+<header></header>
+<main><div class="wrap" id="app"><p>Loading...</p></div></main>
+<script src="app.js"></script>
+<script>
+hdr();
+if(!tok())location.href='login.html?next=dashboard.html';
+const app=$('#app');
+const SECS=[
+ {key:'experience',list:'experience',title:'Experience',
+  fields:[['job_title','Job title','text',1],['employer','Employer','text',1],['start_date','Start date','date'],['end_date','End date','date']],
+  main:x=>x.job_title+' at '+x.employer,sub:x=>(x.start_date||'')+' - '+(x.end_date||'present')},
+ {key:'education',list:'education',title:'Education',
+  fields:[['institution','Institution','text',1],['qualification','Qualification'],['field','Field of study'],['start_year','Start year','number'],['end_year','End year','number']],
+  main:x=>x.institution,sub:x=>[x.qualification,x.field,x.end_year].filter(Boolean).join(' - ')},
+ {key:'certification',list:'certifications',title:'Certifications',
+  fields:[['name','Certification','text',1],['issuer','Issuer'],['year','Year','number']],
+  main:x=>x.name,sub:x=>[x.issuer,x.year].filter(Boolean).join(' - ')},
+];
+const CT={pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'};
+
+async function renderSecs(data){
+  $('#secs').innerHTML=SECS.map(s=>`<div class="card"><h2>${s.title}</h2>
+    ${(data[s.list]||[]).map(x=>`<div class="row"><div><b>${esc(s.main(x))}</b><div class="meta">${esc(s.sub(x))}</div></div><button class="btn sm out" data-del="${s.key}:${x.id}">Remove</button></div>`).join('')||'<p class="meta">Nothing added yet.</p>'}
+    <form data-add="${s.key}" style="margin-top:12px"><div class="two">${s.fields.map(([n,l,t,r])=>`<div><label>${l}</label><input name="${n}" type="${t||'text'}" ${r?'required':''}></div>`).join('')}</div>
+    <p style="margin-top:12px"><button class="btn sm">Add</button></p><div class="msg"></div></form></div>`).join('');
+  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
+    const [k,id]=b.dataset.del.split(':');
+    try{await api(`/api/profile/${k}/${id}`,{method:'DELETE'});reloadSecs()}catch(e){alert(e.message)}
+  });
+  document.querySelectorAll('[data-add]').forEach(f=>f.onsubmit=async e=>{
+    e.preventDefault();
+    const body=Object.fromEntries(new FormData(f));
+    try{await api('/api/profile/'+f.dataset.add,{method:'POST',body});reloadSecs()}
+    catch(err){msg(f.querySelector('.msg'),err.message,false)}
+  });
+}
+const reloadSecs=async()=>renderSecs(await api('/api/profile'));
+
+async function renderCandidate(u){
+  const [P,A]=await Promise.all([api('/api/profile'),api('/api/my/applications')]);
+  const p=P.profile||{};
+  let cvId=p.cv_file_id;
+  app.innerHTML=`<h1>Hi, ${esc(u.full_name)}</h1>
+  <div class="card"><h2>My profile</h2><form id="pf">
+    <label>Headline</label><input name="headline" value="${esc(p.headline)}" placeholder="e.g. Registered Nurse">
+    <label>Summary</label><textarea name="summary" rows="3">${esc(p.summary)}</textarea>
+    <div class="two"><div><label>Location</label><input name="location" value="${esc(p.location)}"></div>
+    <div><label>Years of experience</label><input name="years_experience" type="number" min="0" max="60" value="${esc(p.years_experience)}"></div></div>
+    <div class="two"><div><label>Availability</label><select name="availability">${[['available','Available now'],['open_to_offers','Open to offers'],['not_looking','Not looking']].map(([v,t])=>`<option value="${v}"${p.availability===v?' selected':''}>${t}</option>`).join('')}</select></div>
+    <div><label>Skills (comma separated)</label><input name="skills" value="${esc((p.skills||[]).join(', '))}"></div></div>
+    <label><input type="checkbox" name="is_public" ${p.is_public!==false?'checked':''} style="width:auto"> Visible to recruiters</label>
+    <p style="margin-top:12px"><button class="btn">Save profile</button></p><div class="msg" id="pm"></div>
+  </form></div>
+  <div class="card"><h2>My CV</h2><p class="meta" id="cvs">${cvId?'CV uploaded.':'No CV uploaded yet.'}</p>
+    <input type="file" id="cv" accept=".pdf,.doc,.docx" style="margin-top:10px">
+    <p style="margin-top:10px"><button class="btn sm" id="cvu">Upload CV</button> <button class="btn sm out" id="cvd" style="${cvId?'':'display:none'}">Download</button></p>
+    <div class="msg" id="cm"></div></div>
+  <div id="secs"></div>
+  <div class="card"><h2>My applications</h2>${A.applications.length?A.applications.map(a=>`<div class="row"><div><a href="job.html?slug=${encodeURIComponent(a.slug)}"><b>${esc(a.title)}</b></a><div class="meta">${esc(a.company||'')} &middot; ${esc(a.location||'')}</div></div><span class="tag">${esc(a.status)}</span></div>`).join(''):'<p class="meta">No applications yet. <a href="index.html#jobs"><u>Browse jobs</u></a></p>'}</div>`;
+
+  $('#pf').onsubmit=async e=>{
+    e.preventDefault();
+    const f=new FormData(e.target);
+    const body={headline:f.get('headline'),summary:f.get('summary'),location:f.get('location'),
+      availability:f.get('availability'),skills:f.get('skills'),is_public:f.get('is_public')==='on'};
+    const y=f.get('years_experience');if(y!=='')body.years_experience=y;
+    try{await api('/api/profile',{method:'PUT',body});msg($('#pm'),'Profile saved.',true)}
+    catch(err){msg($('#pm'),err.message,false)}
+  };
+  $('#cvu').onclick=async()=>{
+    const f=$('#cv').files[0];
+    if(!f)return msg($('#cm'),'Choose a file first.',false);
+    const type=CT[f.name.split('.').pop().toLowerCase()]||f.type;
+    try{
+      const d=await api('/api/profile/cv',{method:'PUT',body:f,raw:true,headers:{'Content-Type':type}});
+      cvId=d.file_id;$('#cvd').style.display='';$('#cvs').textContent='CV uploaded.';msg($('#cm'),'CV uploaded.',true);
+    }catch(err){msg($('#cm'),err.message,false)}
+  };
+  $('#cvd').onclick=async()=>{
+    const r=await fetch(API+'/api/files/'+cvId,{headers:{Authorization:'Bearer '+tok()}});
+    if(!r.ok)return msg($('#cm'),'Could not download your CV.',false);
+    const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download='my-cv';a.click();
+  };
+  renderSecs(P);
+}
+
+(async()=>{
+  try{
+    const {user:u}=await api('/api/me');
+    if(u.role!=='candidate'){
+      app.innerHTML=`<div class="card"><h1>Welcome, ${esc(u.full_name)}</h1><p class="meta">You're signed in as ${esc(u.role)}. Your ${u.role==='employer'?'employer':'recruiter'} dashboard is the next piece we're building.</p></div>`;
+      return;
+    }
+    await renderCandidate(u);
+  }catch(e){app.innerHTML='<div class="card"><h2>Something went wrong</h2><p class="meta">'+esc(e.message)+'</p></div>'}
+})();
+</script></body></html>
