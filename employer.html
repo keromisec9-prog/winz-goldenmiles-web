@@ -1,0 +1,110 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Employer | WinZ GoldenMiles</title><link rel="stylesheet" href="style.css"></head><body>
+<header></header>
+<main><div class="wrap" style="max-width:900px">
+  <h1 id="hi">Employer dashboard</h1>
+  <p class="meta" id="err"></p>
+
+  <div class="card"><h2>Post a job</h2>
+    <form id="jf">
+      <label>Job title</label><input name="title" required placeholder="e.g. Registered Nurse">
+      <label>Description</label><textarea name="description" rows="4" required placeholder="Responsibilities, requirements, benefits"></textarea>
+      <div class="two"><div><label>Industry</label><input name="industry"></div><div><label>Location</label><input name="location" placeholder="e.g. Kampala"></div></div>
+      <div class="two">
+        <div><label>Type</label><select name="employment_type"><option value="full-time">Full-time</option><option value="part-time">Part-time</option><option value="contract">Contract</option><option value="temporary">Temporary</option><option value="internship">Internship</option></select></div>
+        <div><label>Experience level</label><select name="experience_level"><option value="">Any</option><option value="entry">Entry</option><option value="mid">Mid</option><option value="senior">Senior</option></select></div>
+      </div>
+      <div class="two"><div><label>Salary from (UGX)</label><input name="salary_min" type="number" min="0"></div><div><label>Salary to (UGX)</label><input name="salary_max" type="number" min="0"></div></div>
+      <label>Application deadline</label><input name="closes_at" type="date">
+      <p style="margin-top:12px"><button class="btn">Submit job</button></p><div class="msg" id="jm"></div>
+    </form>
+  </div>
+
+  <h2 style="margin:22px 0 10px">My jobs</h2>
+  <div id="jobs"><p class="meta">Loading...</p></div>
+
+  <div class="card" style="margin-top:22px"><h2>Company profile</h2>
+    <form id="cf">
+      <div class="two"><div><label>Company name</label><input name="name" required></div><div><label>Industry</label><input name="industry"></div></div>
+      <div class="two"><div><label>Location</label><input name="location"></div><div><label>Website</label><input name="website" placeholder="https://"></div></div>
+      <label>About your company</label><textarea name="description" rows="3"></textarea>
+      <p style="margin-top:12px"><button class="btn">Save company</button></p><div class="msg" id="cm"></div>
+    </form>
+  </div>
+</div></main>
+<script src="app.js"></script>
+<script>
+hdr();
+if(!tok())location.href='login.html?next=employer.html';
+let ME=null,CO=null;
+const ST={draft:'Pending approval',open:'Live',paused:'Paused',closed:'Closed'};
+
+async function showCands(id){
+  const box=$('#c-'+id);
+  if(box.innerHTML){box.innerHTML='';return}
+  box.innerHTML='<p class="meta">Loading...</p>';
+  const {applications:a}=await api(`/api/jobs/${id}/applications`);
+  box.innerHTML=a.length?a.map(x=>`<div class="row" style="display:block">
+    <div style="display:flex;justify-content:space-between;gap:8px"><div><b>${esc(x.full_name)}</b>
+    <div class="meta">${esc(x.headline||'')} &middot; ${esc(x.location||'')} &middot; ${esc(x.years_experience==null?'':x.years_experience)} yrs</div></div>
+    <span class="tag">${esc(x.status)}</span></div>
+    <p>${(x.skills||[]).map(s=>`<span class="tag">${esc(s)}</span>`).join('')}</p>
+    ${x.status==='shortlisted'?`<button class="btn sm" data-dec="${x.id}:interview">Request interview</button> <button class="btn sm out" data-dec="${x.id}:pass">Not a fit</button>`:''}</div>`).join('')
+    +'<p class="meta" style="margin-top:8px">Contact details are shared by your recruiter when an interview is arranged.</p>'
+    :'<p class="meta">No candidates shortlisted yet. Our recruiters are screening applicants for you.</p>';
+  box.querySelectorAll('[data-dec]').forEach(b=>b.onclick=async()=>{
+    const [aid,decision]=b.dataset.dec.split(':');
+    try{await api('/api/employer/applications/'+aid,{method:'PUT',body:{decision}});box.innerHTML='';showCands(id);loadJobs()}
+    catch(e){alert(e.message)}
+  });
+}
+
+async function loadJobs(){
+  const {jobs}=await api('/api/employer/jobs');
+  $('#jobs').innerHTML=jobs.length?jobs.map(j=>`<div class="card"><div class="row" style="border:0;padding:0">
+    <div><b>${esc(j.title)}</b><div class="meta">${esc(j.location||'')} &middot; ${esc(String(j.created_at).slice(0,10))}</div></div>
+    <span class="tag">${esc(ST[j.status]||j.status)}</span></div>
+    <p class="meta" style="margin:8px 0">${j.applicants} applicants &middot; ${j.shortlisted} shortlisted by our team</p>
+    <p><button class="btn sm" data-cand="${j.id}">Shortlisted candidates</button>
+    <button class="btn sm out" data-help="${j.id}" data-t="${esc(j.title)}">Ask our team to recruit</button>
+    ${j.status!=='closed'?`<button class="btn sm out" data-close="${j.id}">Close job</button>`:''}</p>
+    <div id="c-${j.id}"></div></div>`).join(''):'<p class="meta">No jobs posted yet.</p>';
+  document.querySelectorAll('[data-cand]').forEach(b=>b.onclick=()=>showCands(b.dataset.cand));
+  document.querySelectorAll('[data-close]').forEach(b=>b.onclick=async()=>{
+    if(!confirm('Close this job?'))return;
+    try{await api('/api/jobs/'+b.dataset.close,{method:'PUT',body:{status:'closed'}});loadJobs()}catch(e){alert(e.message)}
+  });
+  document.querySelectorAll('[data-help]').forEach(b=>b.onclick=async()=>{
+    try{
+      await api('/api/leads',{method:'POST',body:{company_name:CO.name,contact_name:ME.full_name,email:ME.email,phone:ME.phone||'',job_title:b.dataset.t,notes:'Requested from the employer dashboard'}});
+      b.textContent='Requested - we will contact you';b.disabled=true;
+    }catch(e){alert(e.message)}
+  });
+}
+
+$('#jf').onsubmit=async e=>{
+  e.preventDefault();
+  const body=Object.fromEntries(new FormData(e.target));
+  try{
+    await api('/api/jobs',{method:'POST',body});
+    e.target.reset();msg($('#jm'),'Job submitted! Our recruiters will review it and publish it shortly.',true);loadJobs();
+  }catch(err){msg($('#jm'),err.message,false)}
+};
+$('#cf').onsubmit=async e=>{
+  e.preventDefault();
+  const body=Object.fromEntries(new FormData(e.target));
+  try{CO=(await api('/api/company',{method:'PUT',body})).company;$('#hi').textContent=CO.name;msg($('#cm'),'Company saved.',true)}
+  catch(err){msg($('#cm'),err.message,false)}
+};
+
+(async()=>{
+  try{
+    ME=(await api('/api/me')).user;
+    if(ME.role!=='employer'){location.href='dashboard.html';return}
+    CO=(await api('/api/company')).company;
+    $('#hi').textContent=CO.name;
+    Object.keys(CO).forEach(k=>{const el=document.querySelector('#cf [name="'+k+'"]');if(el&&CO[k]!=null)el.value=CO[k]});
+    loadJobs();
+  }catch(e){$('#err').textContent=e.message}
+})();
+</script></body></html>
