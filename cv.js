@@ -56,7 +56,7 @@ function initCv(startId){
     st.textContent='.opt{background:#fff;border:0;border-radius:16px;padding:16px 6px;font:inherit;font-size:15px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08)}.opt span{font-size:26px}.fi{position:absolute;opacity:0;width:0;height:0;pointer-events:none}';
     document.head.appendChild(st);
     const w=document.createElement('div');
-    w.innerHTML=`<div id="cv-bg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50"></div>
+    w.innerHTML=`<div id="cv-bg" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:50"></div>
     <div id="cv-sheet" style="display:none;position:fixed;left:0;right:0;bottom:0;background:#f7f7f5;border-radius:22px 22px 0 0;padding:16px 16px 26px;z-index:51;max-width:560px;margin:0 auto">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b style="font-size:18px">Add your CV</b><button id="cv-x" class="btn sm out">Close</button></div>
       <p class="meta" style="margin-bottom:14px">Photos are combined into one PDF automatically.</p>
