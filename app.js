@@ -27,5 +27,5 @@ async function api(path,opts={}){
 
 function hdr(){
   const u=user();
-  document.querySelector('header').innerHTML=`<div class="wrap"><a class="logo" href="index.html">WinZ <b>GoldenMiles</b></a><nav><a href="index.html#jobs">Jobs</a>${u?'<a href="dashboard.html">Dashboard</a><button onclick="logout()">Logout</button>':'<a href="login.html">Login</a>'}</nav></div>`;
+  document.querySelector('header').innerHTML=`<div class="wrap"><a class="logo" href="index.html">WinZ <b>GoldenMiles</b></a><nav><a href="index.html#jobs">Jobs</a>${u?'<a href="dashboard.html">Dashboard</a><a href="account.html">Account</a><button onclick="logout()">Logout</button>':'<a href="login.html">Login</a>'}</nav></div>`;
 }
