@@ -5,10 +5,11 @@
 <main><div class="wrap" style="max-width:980px">
   <h1>Recruitment command center</h1>
   <div class="tabs">
-    <button class="btn sm" id="b-overview">Overview</button><button class="btn sm out" id="b-leads">Leads</button><button class="btn sm out" id="b-jobs">Jobs</button><button class="btn sm out" id="b-talent">Talent</button>
+    <button class="btn sm" id="b-overview">Overview</button><button class="btn sm out" id="b-leads">Leads</button><button class="btn sm out" id="b-jobs">Jobs</button><button class="btn sm out" id="b-talent">Talent</button><button class="btn sm out" id="b-team" style="display:none">Team</button>
   </div>
   <p class="meta" id="err"></p>
   <div id="t-overview"></div><div id="t-leads" style="display:none"></div><div id="t-jobs" style="display:none"></div>
+  <div id="t-team" style="display:none"></div>
   <div id="t-talent" style="display:none">
     <form id="tf" class="card">
       <div class="two"><div><label>Skills (comma separated, all required)</label><input name="skills" placeholder="e.g. accounting, cpa"></div><div><label>Location</label><input name="location"></div></div>
@@ -27,7 +28,7 @@ if(!tok())location.href='login.html?next=recruiter.html';
 let ME=null,STAFF=[];
 const LS=['new','contacted','quoted','won','lost'];
 const AS=['applied','screening','shortlisted','interview','offer','hired','rejected'];
-const TABS=['overview','leads','jobs','talent'];
+const TABS=['overview','leads','jobs','talent','team'];
 const wa=p=>{let d=String(p||'').replace(/\D/g,'');if(d.charAt(0)==='0')d='256'+d.slice(1);return d};
 const contact=(phone,email)=>(phone?`<a class="tag" href="tel:${esc(phone)}">Call</a><a class="tag" href="https://wa.me/${wa(phone)}" target="_blank" rel="noopener">WhatsApp</a>`:'')+(email?`<a class="tag" href="mailto:${esc(email)}">Email</a>`:'');
 const opts=(arr,sel)=>arr.map(v=>`<option value="${v}"${v===sel?' selected':''}>${v}</option>`).join('');
@@ -120,7 +121,57 @@ $('#tf').onsubmit=async e=>{
   }catch(err){$('#err').textContent=err.message}
 };
 
-const LOAD={overview:loadOverview,leads:loadLeads,jobs:loadJobs};
+function showPw(pw,email,phone,name){
+  const link=location.origin+location.pathname.replace(/[^\/]*$/,'')+'login.html';
+  const text='Hi '+name+', your WinZ GoldenMiles staff account is ready.\nLogin: '+link+'\nEmail: '+email+'\nTemporary password: '+pw+'\nYou will be asked to set your own password when you sign in.';
+  $('#pw').innerHTML='<div class="msg ok" style="display:block"><b>Temporary password (shown once):</b> <code style="font-size:16px">'+esc(pw)+'</code><p style="margin-top:8px">'+(phone?'<a class="tag" target="_blank" rel="noopener" href="https://wa.me/'+wa(phone)+'?text='+encodeURIComponent(text)+'">Send via WhatsApp</a>':'')+'<button class="tag" id="cpb">Copy message</button></p></div>';
+  $('#cpb').onclick=()=>{if(navigator.clipboard)navigator.clipboard.writeText(text);$('#cpb').textContent='Copied'};
+  $('#pw').scrollIntoView();
+}
+async function loadTeam(){
+  const box=$('#t-team'),isAdmin=ME.role==='admin';
+  if(!$('#tm')){
+    box.innerHTML='<div class="card"><h2>Onboard a team member</h2><form id="tm">'+
+      '<div class="two"><div><label>Full name</label><input name="full_name" required></div><div><label>Role name (e.g. Senior Recruiter, HR Consultant)</label><input name="title" required></div></div>'+
+      '<div class="two"><div><label>Email</label><input name="email" type="email" required></div><div><label>Phone / WhatsApp</label><input name="phone"></div></div>'+
+      (isAdmin?'<label><input type="checkbox" name="can_onboard" style="width:auto"> Allowed to onboard other team members</label>':'')+
+      '<p style="margin-top:12px"><button class="btn">Onboard</button></p><div class="msg" id="tmm"></div></form><div id="pw" style="margin-top:12px"></div></div>'+
+      '<h2 style="margin:18px 0 10px">Team</h2><div id="tl"></div>'+
+      (isAdmin?'<h2 style="margin:18px 0 10px">Recent activity</h2><div class="card" id="al"></div>':'');
+    $('#tm').onsubmit=async e=>{
+      e.preventDefault();
+      const f=new FormData(e.target);
+      const body={full_name:f.get('full_name'),title:f.get('title'),email:f.get('email'),phone:f.get('phone'),can_onboard:f.get('can_onboard')==='on'};
+      try{
+        const d=await api('/api/admin/team',{method:'POST',body});
+        e.target.reset();showPw(d.temp_password,d.user.email,d.user.phone,d.user.full_name);loadTeam();
+      }catch(err){msg($('#tmm'),err.message,false)}
+    };
+  }
+  const {team}=await api('/api/admin/team');
+  const T={};team.forEach(t=>{T[t.id]=t});
+  $('#tl').innerHTML=team.map(t=>'<div class="card"><div class="row" style="border:0;padding:0"><div><b>'+esc(t.full_name)+'</b><div class="meta">'+esc(t.title||'')+' &middot; '+esc(t.email)+(t.phone?' &middot; '+esc(t.phone):'')+'</div></div><span class="tag">'+(t.status!=='active'?'disabled':(t.role==='admin'?'admin':'staff'))+'</span></div>'+
+    '<p class="meta" style="margin:6px 0">'+((t.can_onboard||t.role==='admin')?'Can onboard others':'Cannot onboard others')+(t.must_change_password?' &middot; has not set their own password yet':'')+'</p>'+
+    ((isAdmin&&t.id!==ME.id)?'<p><button class="btn sm out" data-tg="'+t.id+':onb">'+(t.can_onboard?'Remove onboarding right':'Allow onboarding')+'</button> <button class="btn sm out" data-tg="'+t.id+':st">'+(t.status==='active'?'Disable':'Enable')+'</button> <button class="btn sm out" data-tg="'+t.id+':pw">Reset password</button>'+(t.role!=='admin'?' <button class="btn sm out" data-tg="'+t.id+':adm">Make admin</button>':'')+'</p>':'')+'</div>').join('');
+  document.querySelectorAll('[data-tg]').forEach(b=>b.onclick=async()=>{
+    const [id,act]=b.dataset.tg.split(':'),t=T[id];
+    try{
+      if(act==='pw'){
+        if(!confirm('Reset the password for '+t.full_name+'?'))return;
+        const d=await api('/api/admin/team/'+id+'/reset-password',{method:'POST',body:{}});
+        showPw(d.temp_password,t.email,t.phone,t.full_name);return;
+      }
+      if(act==='adm'&&!confirm('Make '+t.full_name+' a full admin? Admins can onboard staff and manage permissions.'))return;
+      const body=act==='onb'?{can_onboard:!t.can_onboard}:act==='st'?{status:t.status==='active'?'disabled':'active'}:{role:'admin'};
+      await api('/api/admin/team/'+id,{method:'PUT',body});loadTeam();
+    }catch(e){alert(e.message)}
+  });
+  if(isAdmin){
+    const {log}=await api('/api/admin/audit');
+    $('#al').innerHTML=log.length?log.map(l=>'<div class="row"><div>'+esc(l.actor||'?')+' &middot; '+esc(l.action)+(l.target?' &middot; '+esc(l.target):'')+'</div><span class="meta">'+esc(String(l.created_at).slice(0,16))+'</span></div>').join(''):'<p class="meta">Nothing yet.</p>';
+  }
+}
+const LOAD={overview:loadOverview,leads:loadLeads,jobs:loadJobs,team:loadTeam};
 function tab(t){
   TABS.forEach(x=>{$('#t-'+x).style.display=x===t?'':'none';$('#b-'+x).className='btn sm'+(x===t?'':' out')});
   $('#err').textContent='';
@@ -132,6 +183,8 @@ TABS.forEach(t=>$('#b-'+t).onclick=()=>tab(t));
   try{
     ME=(await api('/api/me')).user;
     if(ME.role!=='recruiter'&&ME.role!=='admin'){location.href='dashboard.html';return}
+    if(ME.must_change_password){location.href='account.html?force=1';return}
+    if(ME.role==='admin'||ME.can_onboard)$('#b-team').style.display='';
     STAFF=(await api('/api/admin/staff')).staff;
     tab('overview');
   }catch(e){$('#err').textContent=e.message}
