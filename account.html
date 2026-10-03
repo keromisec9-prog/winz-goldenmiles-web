@@ -1,0 +1,30 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Account | WinZ GoldenMiles</title><link rel="stylesheet" href="style.css"></head><body>
+<header></header>
+<main><div class="wrap" style="max-width:460px">
+  <h1>Account</h1>
+  <p class="meta" id="note" style="margin-bottom:12px"></p>
+  <div class="card"><h2>Change password</h2>
+    <form id="pf">
+      <label>Current password</label><input type="password" name="current_password" required>
+      <label>New password (min 8 characters)</label><input type="password" name="new_password" minlength="8" required>
+      <p style="margin-top:14px"><button class="btn">Update password</button></p>
+      <div class="msg" id="m"></div>
+    </form>
+  </div>
+</div></main>
+<script src="app.js"></script>
+<script>
+hdr();
+if(!tok())location.href='login.html?next=account.html';
+if(new URLSearchParams(location.search).get('force'))$('#note').textContent='For your security, please set your own password before continuing.';
+$('#pf').onsubmit=async e=>{
+  e.preventDefault();
+  const body=Object.fromEntries(new FormData(e.target));
+  try{
+    await api('/api/me/password',{method:'PUT',body});
+    msg($('#m'),'Password updated. Redirecting...',true);
+    setTimeout(()=>{location.href='dashboard.html'},1200);
+  }catch(err){msg($('#m'),err.message,false)}
+};
+</script></body></html>
